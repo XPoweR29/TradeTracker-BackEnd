@@ -2,11 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import 'express-async-errors';
 import rateLImit, { rateLimit } from 'express-rate-limit';
+import { config } from './config/config';
 
 const app = express();
 
 app.use(cors({
-    origin: 'http:localhost:3000',
+    origin: config.crosOrigin,
 }))
 app.use(express.json());
 
