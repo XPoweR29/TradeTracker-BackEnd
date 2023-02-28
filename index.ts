@@ -3,7 +3,7 @@ import 'express-async-errors';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import { config } from './config/config';
-import { handleError, ValidationError } from './utils/errors';
+import { handleError} from './utils/errors';
 
 const app = express();
 
@@ -16,6 +16,7 @@ app.use(rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
 }));
+
 //routers
 app.use(handleError);
 
