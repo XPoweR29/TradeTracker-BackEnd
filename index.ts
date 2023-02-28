@@ -4,7 +4,6 @@ import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import { config } from './config/config';
 import { handleError} from './utils/errors';
-import { PositionRecord } from './records/position.record';
 
 const app = express();
 

@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Position, SimplePosition } from "../types";
+import { operation, Position, when, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -13,8 +13,8 @@ export class PositionRecord {
     public result?: string;
     public date: string;
     public flag: number;
-    public imgUrlBefore?: string[];
-    public imgUrlAfter?: string[];
+    public imgUrlBefore?: string;
+    public imgUrlAfter?: string;
     public descriptionBefore?: string;
     public descriptionAfter?: string;
     public entryPrice?: number;
@@ -78,6 +78,58 @@ export class PositionRecord {
         console.log('▶.....Position has been successfully inserted. ✔')
     }
 
+    async update(obj: Position) {
+        await pool.execute("UPDATE `positions` SET `market` = :market, `direction` = :direction, `date` = :date, `result` = :result, `flag` = :flag, `descriptionBefore` = :descriptionBefore, `descriptionAfter` = :descriptionAfter, `entry_price` = :entry_price, `sl_price` = :sl_price, `sl_value` = :sl_value, `close_price` = :close_price, `rr` = :rr WHERE `id` = :id", {
+            id: this.id,
+            market: obj.market,
+            direction: obj.direction,
+            result: obj.result,
+            date: obj.date,
+            flag: obj.flag,
+            descriptionBefore: obj.descriptionBefore,
+            descriptionAfter: obj.descriptionAfter,
+            entry_price: obj.entryPrice,
+            sl_price: obj.slPrice,
+            sl_value: obj.slValue,
+            close_price: obj.closePrice,
+            rr: obj.rr,
+        });
+
+        console.log('▶.....Position has been successfully updated. ✔');
+    }
+
+    async updateUrl(url: string, makeOperation: operation, when: when) {
+
+        if(makeOperation === 'add') {
+             !this[when].includes(url) ? 
+
+                pool.execute(`UPDATE \`positions\` SET \`${when}\` = JSON_ARRAY_APPEND(\`${when}\`, '$', :url) WHERE \`id\` = :id`, {
+                   id: this.id,
+                   url,
+                   when,
+               })
+               .then(() => console.log('▶.....URL has been successfully updated. ✔'))
+            :
+
+            console.log('▶.....This URL is already addded ❌');
+            return;
+            
+        } else if(makeOperation === 'remove') {
+            this[when].includes(url) ? 
+
+            pool.execute(`UPDATE \`positions\` SET \`${when}\` = JSON_REMOVE(\`${when}\`, JSON_UNQUOTE(JSON_SEARCH(\`${when}\`, 'one', :url))) WHERE \`id\` = :id`, {
+            id: this.id,
+            url,
+            when, 
+        })
+        .then(() => console.log('▶.....URL has been successfully updated. ✔'))
+        
+        :
+
+        console.log('▶.....There is no such URL ❌');
+        return;
+        }
+    };
 
     async delete() {
         await pool.execute("DELETE FROM `positions` WHERE `id` = :id", {
