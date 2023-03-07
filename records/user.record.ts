@@ -1,5 +1,9 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
+import {promisify} from 'util';
+import {hash} from 'bcrypt';
+const hashing = promisify(hash);
+
 
 import { User } from "../types";
 import { pool } from '../utils/db';
@@ -22,7 +26,7 @@ export class UserRecord {
         this.id = obj.id;
         this.username = obj.username;
         this.email = obj.email
-        this.pwd = obj.pwd
+        this.pwd = obj.pwd;
     }
 
     async insert(): Promise<void> {
@@ -34,10 +38,10 @@ export class UserRecord {
             id: this.id,
             username: this.username,
             email: this.email,
-            pwd: this.pwd
+            pwd: await hashing(this.pwd, 10),
         })
 
-        //>>! Tutaj konieczenie hasnowanie hasła!
+        
         console.log(`▶.....User ${this.username} has been created successfully, with id ${this.id}`);
     }
 
@@ -54,9 +58,9 @@ export class UserRecord {
             id: this.id,
             username: data.username || this.username,
             email: data.email || this.email,
-            pwd: data.pwd || this.pwd,
+            pwd: data.pwd ? await hashing(data.pwd, 10) : this.pwd,
         });
-        //>>! Tutaj koniecznie hasnowanie nowego hasła!
+        
         console.log(`▶.....User ${data.username || this.username} has been successfully updated. ✔`);
     }
 
