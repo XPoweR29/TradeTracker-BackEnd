@@ -45,9 +45,17 @@ export class UserRecord {
         console.log(`▶.....User ${this.username} has been created successfully, with id ${this.id}`);
     }
 
-    static async getUser(id: string): Promise<UserRecord | null>{
+    static async getUserById(id: string): Promise<UserRecord | null>{
         const [results] = (await pool.execute("SELECT * FROM `users` WHERE `id` = :id", {
             id,
+        }))as UserRecordResults;
+
+        return results.length === 0 ? null : new UserRecord(results[0]);
+    }
+
+    static async getUserByEmail(email: string): Promise<UserRecord | null>{
+        const [results] = (await pool.execute("SELECT * FROM `users` WHERE `email` = :email", {
+            email,
         }))as UserRecordResults;
 
         return results.length === 0 ? null : new UserRecord(results[0]);
