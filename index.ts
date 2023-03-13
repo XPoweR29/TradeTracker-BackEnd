@@ -4,6 +4,7 @@ import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import { config } from './config/config';
 import { handleError} from './utils/errors';
+import { userRouter } from './routers/user.router';
 
 const app = express();
 
@@ -17,7 +18,8 @@ app.use(rateLimit({
     max: 100,
 }));
 
-//routers
+app.use('/user', userRouter);
+
 app.use(handleError);
 
 app.listen(3001, '0.0.0.0', () => {
