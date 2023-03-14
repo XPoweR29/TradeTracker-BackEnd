@@ -1,6 +1,5 @@
 import { promisify } from "util";
 import { compare } from "bcrypt";
-const comparing = promisify(compare);
 import { UserRecord } from "../records/user.record";
 import { ValidationError } from "./errors";
 
