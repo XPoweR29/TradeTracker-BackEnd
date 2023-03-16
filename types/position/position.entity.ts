@@ -1,4 +1,5 @@
 export interface Position extends SimplePosition {
+    userId: string;
     imgUrlBefore?: string;
     imgUrlAfter?: string;
     descriptionBefore?: string;
@@ -12,9 +13,9 @@ export interface Position extends SimplePosition {
 
 export interface SimplePosition {
     id?: string;
-    market?: string;
-    direction?: string;
-    date?: string;
+    market: string;
+    direction: string;
+    date: string;
     result?: string;
     flag?: number;
 }

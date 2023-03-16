@@ -8,6 +8,7 @@ type PositionRecordResults = [PositionRecord[], FieldPacket[]];
 
 export class PositionRecord {
     readonly id?: string;
+    public userId: string;
     public market: string;
     public direction: string;
     public result?: string;
@@ -25,6 +26,10 @@ export class PositionRecord {
 
     constructor(obj: Position) {
 
+        if(!obj.userId) {
+            throw new ValidationError('Nie podano ID użytkownika do którego przypisać pozycję.');
+        }
+
         if(obj.market.length === 0 || obj.market.length >10) {
             throw new ValidationError('WALOR nie możebyć pusty ani zawierać więcej niż 10 znaków.');
         }
@@ -38,6 +43,7 @@ export class PositionRecord {
         }
 
         this.id = obj.id ?? uuid();
+        this.userId = obj.userId;
         this.market = obj.market;
         this.direction = obj.direction;
         this.result = obj.result ?? null;
@@ -55,8 +61,10 @@ export class PositionRecord {
         
     }
 
-    static async getAll(): Promise<PositionRecord[] | null> {
-        const [results] = (await pool.execute("SELECT * FROM `positions`")) as PositionRecordResults;
+    static async getAll(userId: string): Promise<PositionRecord[] | null> {
+        const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId", {
+            userId,
+        })) as PositionRecordResults;
         return results.length === 0? null : results.map(result => new PositionRecord(result));
     } 
 
@@ -68,13 +76,13 @@ export class PositionRecord {
     }
 
     async insert(): Promise<void> {
-        await pool.execute("INSERT INTO `positions` (`id`, `market`, `direction`, `date`) VALUES(:id, :market, :direction, :date)", {
+        await pool.execute("INSERT INTO `positions` (`id`, `market`, `direction`, `date`, `userId`) VALUES(:id, :market, :direction, :date, :userId)", {
             id: this.id,
             market: this.market,
             direction: this.direction,
             date: this.date,
+            userId: this.userId
         });
-
         console.log('▶.....Position has been successfully inserted. ✔')
     }
 

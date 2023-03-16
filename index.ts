@@ -5,6 +5,7 @@ import { rateLimit } from 'express-rate-limit';
 import { config } from './config/config';
 import { handleError} from './utils/errors';
 import { userRouter } from './routers/user.router';
+import { positionsRouter } from './routers/position.router';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(rateLimit({
 }));
 
 app.use('/user', userRouter);
+app.use('/positions', positionsRouter);
 
 app.use(handleError);
 
