@@ -30,6 +30,10 @@ export class PositionRecord {
             throw new ValidationError('Nie podano ID użytkownika do którego przypisać pozycję.');
         }
 
+        if(!obj.direction) {
+            throw new ValidationError('Nie zdefiniowano kierunku handlu');
+        }
+
         if(obj.market.length === 0 || obj.market.length >10) {
             throw new ValidationError('WALOR nie możebyć pusty ani zawierać więcej niż 10 znaków.');
         }
@@ -72,7 +76,9 @@ export class PositionRecord {
         const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `id` = :id", {
             id,
         })) as PositionRecordResults;
-        return results.length === 0 ? null : new PositionRecord(results[0]); 
+        if(results.length === 0) {
+            throw new ValidationError('Pozycja o podanym ID nie istnieje.');
+        } else return new PositionRecord(results[0]);
     }
 
     async insert(): Promise<void> {
@@ -86,21 +92,26 @@ export class PositionRecord {
         console.log('▶.....Position has been successfully inserted. ✔')
     }
 
-    async update(obj: Position) {
+    async update(data: Partial<Position>) {
+        const updated = {
+            ...this,
+            ...data
+        }
+
         await pool.execute("UPDATE `positions` SET `market` = :market, `direction` = :direction, `date` = :date, `result` = :result, `flag` = :flag, `descriptionBefore` = :descriptionBefore, `descriptionAfter` = :descriptionAfter, `entry_price` = :entry_price, `sl_price` = :sl_price, `sl_value` = :sl_value, `close_price` = :close_price, `rr` = :rr WHERE `id` = :id", {
             id: this.id,
-            market: obj.market,
-            direction: obj.direction,
-            result: obj.result,
-            date: obj.date,
-            flag: obj.flag,
-            descriptionBefore: obj.descriptionBefore,
-            descriptionAfter: obj.descriptionAfter,
-            entry_price: obj.entryPrice,
-            sl_price: obj.slPrice,
-            sl_value: obj.slValue,
-            close_price: obj.closePrice,
-            rr: obj.rr,
+            market: updated.market,
+            direction: updated.direction,
+            result: updated.result,
+            date: updated.date,
+            flag: updated.flag,
+            descriptionBefore: updated.descriptionBefore,
+            descriptionAfter: updated.descriptionAfter,
+            entry_price: updated.entryPrice,
+            sl_price: updated.slPrice,
+            sl_value: updated.slValue,
+            close_price: updated.closePrice,
+            rr: updated.rr,
         });
 
         console.log('▶.....Position has been successfully updated. ✔');
@@ -140,9 +151,9 @@ export class PositionRecord {
     };
 
     async delete() {
-        await pool.execute("DELETE FROM `positions` WHERE `id` = :id", {
+        const [result] = await pool.execute("DELETE FROM `positions` WHERE `id` = :id", {
             id: this.id,
-        });
+        })
 
         console.log('▶.....Position has been successfully deleted. ✔')
     }
