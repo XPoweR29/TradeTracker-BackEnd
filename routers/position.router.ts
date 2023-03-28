@@ -28,3 +28,19 @@ positionsRouter
     res.json('Pozycja została zaktualizowana');
 
 })
+
+.put('/:id', async(req, res) => {
+    const position = await PositionRecord.getOne(req.params.id);
+    const {imgLink, when} = req.body;
+    position.updateUrl(imgLink, 'add', when);
+    res.end();
+
+})
+
+.delete('/image/:id', async(req, res) => {
+    const position = await PositionRecord.getOne(req.params.id);
+    const {imgLink, when} = req.body;
+    position.updateUrl(imgLink, 'remove', when);
+    res.end();
+
+})

@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { operation, Position, when, } from "../types";
+import { Operation, Position, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -50,7 +50,7 @@ export class PositionRecord {
         this.userId = obj.userId;
         this.market = obj.market;
         this.direction = obj.direction;
-        this.result = obj.result ?? null;
+        this.result = obj.result ?? '';
         this.date = obj.date;
         this.flag = obj.flag ?? 0;
         this.imgUrlBefore = obj.imgUrlBefore ?? null;
@@ -117,7 +117,7 @@ export class PositionRecord {
         console.log('▶.....Position has been successfully updated. ✔');
     }
 
-    async updateUrl(url: string, makeOperation: operation, when: when) {
+    async updateUrl(url: string, makeOperation: Operation, when: When) {
 
         if(makeOperation === 'add') {
              !this[when].includes(url) ? 
@@ -158,3 +158,5 @@ export class PositionRecord {
         console.log('▶.....Position has been successfully deleted. ✔')
     }
 }
+
+

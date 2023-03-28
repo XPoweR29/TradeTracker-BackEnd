@@ -20,12 +20,6 @@ export interface SimplePosition {
     flag?: number;
 }
 
-export enum operation {
-    remove = 'remove',
-    add = 'add',
-}
+export type Operation = 'add' | 'remove';
 
-export enum when {
-    before = `imgUrlBefore`,
-    after = `imgUrlAfter`,
-}
+export type When = 'imgUrlBefore' | 'imgUrlAfter';
