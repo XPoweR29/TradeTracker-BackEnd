@@ -19,7 +19,6 @@ export class PositionRecord {
     public descriptionBefore?: string;
     public descriptionAfter?: string;
     public entryPrice?: number;
-    public slPrice?: number;
     public slValue?: number;
     public closePrice?: number;
     public rr?: number;
@@ -46,6 +45,8 @@ export class PositionRecord {
             throw new ValidationError('Opis nie może zawierać więcej niż 1500 znaków.');
         }
 
+        if(!obj.userId) throw new ValidationError('ID użytkownika jest wymagane.');
+
         this.id = obj.id ?? uuid();
         this.userId = obj.userId;
         this.market = obj.market;
@@ -58,7 +59,6 @@ export class PositionRecord {
         this.descriptionBefore = obj.descriptionBefore ?? null;
         this.descriptionAfter = obj.descriptionAfter ?? null;
         this.entryPrice = obj.entryPrice ?? null;
-        this.slPrice = obj.slPrice ?? null;
         this.slValue = obj.slValue ?? null;
         this.closePrice = obj.closePrice ?? null;
         this.rr = obj.rr ?? null;
@@ -82,12 +82,15 @@ export class PositionRecord {
     }
 
     async insert(): Promise<void> {
-        await pool.execute("INSERT INTO `positions` (`id`, `market`, `direction`, `date`, `userId`) VALUES(:id, :market, :direction, :date, :userId)", {
+        await pool.execute("INSERT INTO `positions` (`id`, `market`, `direction`, `date`, `userId`, `entryPrice`, `slValue`) VALUES(:id, :market, :direction, :date, :userId, :entryPrice, :slValue)", {
             id: this.id,
             market: this.market,
             direction: this.direction,
             date: this.date,
-            userId: this.userId
+            userId: this.userId,
+            entryPrice: this.entryPrice,
+            slValue: this.slValue
+
         });
         console.log('▶.....Position has been successfully inserted. ✔')
     }
@@ -98,7 +101,7 @@ export class PositionRecord {
             ...data
         }
 
-        await pool.execute("UPDATE `positions` SET `market` = :market, `direction` = :direction, `date` = :date, `result` = :result, `flag` = :flag, `descriptionBefore` = :descriptionBefore, `descriptionAfter` = :descriptionAfter, `entry_price` = :entry_price, `sl_price` = :sl_price, `sl_value` = :sl_value, `close_price` = :close_price, `rr` = :rr WHERE `id` = :id", {
+        await pool.execute("UPDATE `positions` SET `market` = :market, `direction` = :direction, `date` = :date, `result` = :result, `flag` = :flag, `descriptionBefore` = :descriptionBefore, `descriptionAfter` = :descriptionAfter, `entryPrice` = :entryPrice, `slValue` = :slValue, `closePrice` = :closePrice, `rr` = :rr WHERE `id` = :id", {
             id: this.id,
             market: updated.market,
             direction: updated.direction,
@@ -107,10 +110,9 @@ export class PositionRecord {
             flag: updated.flag,
             descriptionBefore: updated.descriptionBefore,
             descriptionAfter: updated.descriptionAfter,
-            entry_price: updated.entryPrice,
-            sl_price: updated.slPrice,
-            sl_value: updated.slValue,
-            close_price: updated.closePrice,
+            entryPrice: updated.entryPrice,
+            slValue: updated.slValue,
+            closePrice: updated.closePrice,
             rr: updated.rr,
         });
 

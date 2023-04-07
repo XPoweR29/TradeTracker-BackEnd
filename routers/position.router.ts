@@ -8,11 +8,11 @@ positionsRouter
 .get('/:userId', async(req, res) => {
     const data = await PositionRecord.getAll(req.params.userId);
     res.json(data);
-    
 })
 
 .post('/', async(req, res) => {
-    const position = new PositionRecord(req.body);await position.insert();
+    const position = new PositionRecord(req.body);
+    await position.insert();
     res.json('Pozycja została pomyślnie dodana');
 })
 

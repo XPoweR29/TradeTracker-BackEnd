@@ -5,7 +5,6 @@ export interface Position extends SimplePosition {
     descriptionBefore?: string;
     descriptionAfter?: string;
     entryPrice?: number;
-    slPrice?: number;
     slValue?: number;
     closePrice?: number;
     rr?: number;
