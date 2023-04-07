@@ -17,22 +17,29 @@ export class UserRecord {
     public email: string;
     public pwd: string;
     constructor(obj: User) {
-        //>>! Tutaj miejsce na walidację danych przekazywanych do rekodu!
 
-        if(!obj.email || !obj.pwd) {
-            throw new ValidationError('Adres email i hasło są wymagane.');
-        } 
+        if(!obj.email || !obj.pwd) throw new ValidationError('Adres email i hasło są wymagane.');
 
-        this.id = obj.id;
+        if(!obj.username) throw new ValidationError('Nazwa użytkownika jest wymagana');
+
+        this.id = obj.id || uuid();
         this.username = obj.username;
         this.email = obj.email
         this.pwd = obj.pwd;
     }
 
+    private async validation(): Promise<void> {
+        const userExists = await UserRecord.getUserByUsername(this.username);
+        const emailExists = await UserRecord.getUserByEmail(this.email);
+        const userIdExsts = await UserRecord.getUserById(this.id);
+
+        if(userExists) throw new ValidationError('This username already exists');
+        if(emailExists) throw new ValidationError('This email already exists');
+        if(userIdExsts) throw new ValidationError('This user ID already exists');
+    }
+
     async insert(): Promise<void> {
-        if(!this.id) {
-            this.id = uuid();
-        } 
+        await this.validation();
 
         await pool.execute("INSERT INTO `users` (`id`, `username`, `email`, `pwd`) VALUES(:id, :username, :email, :pwd)", {
             id: this.id,
@@ -61,15 +68,26 @@ export class UserRecord {
         return results.length === 0 ? null : new UserRecord(results[0]);
     }
 
-    async update(data: Partial<User>): Promise<void> {
+    static async getUserByUsername(username: string): Promise<UserRecord | null>{
+        const [results] = (await pool.execute("SELECT * FROM `users` WHERE `username` = :username", {
+            username,
+        }))as UserRecordResults;
+
+        return results.length === 0 ? null : new UserRecord(results[0]);
+    }
+
+    async update(data: Partial<User>): Promise<UserRecord> {
         await pool.execute("UPDATE `users` SET username=:username, email=:email, pwd=:pwd WHERE id=:id", {
             id: this.id,
             username: data.username || this.username,
             email: data.email || this.email,
             pwd: data.pwd ? await hashing(data.pwd, 10) : this.pwd,
         });
+
+        Object.assign(this, data);
         
         console.log(`▶.....User ${data.username || this.username} has been successfully updated. ✔`);
+        return this;
     }
 
     async delete(): Promise<void> {
