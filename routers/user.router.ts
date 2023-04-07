@@ -35,3 +35,35 @@ userRouter
         res.json({message: `Użytkownik ${newUser.username} został pomyślnie zarejestrowany. Możesz teraz zalogować się do swojego konta.` })
 
 })
+
+.patch('/update-username', async(req, res): Promise<void> => {
+        const user = await UserRecord.getUserById(req.body.id);
+        const updatedUser = await user.update({username: req.body.username});
+        res.json({
+                user: updatedUser, 
+                message: 'Nazwa użytkownika została zmieniona'
+        });
+}) 
+
+.patch('/update-email', async(req, res): Promise<void> => {
+        const user = await UserRecord.getUserById(req.body.id);
+        const updatedUser = await user.update({email: req.body.email});
+        res.json({
+                user: updatedUser, 
+                message: `Email użytkownika został zmieniony`
+        });
+}) 
+
+.patch('/update-pwd', async(req, res): Promise<void> => {
+        const {pwd, confirmPwd, id} = req.body;
+        if(pwd !== confirmPwd) {
+                throw new ValidationError('Podane hasła różnią się od siebie');
+        }
+
+        const user = await UserRecord.getUserById(id);
+        const updatedUser = await user.update({pwd: pwd});
+        res.json({
+                user: updatedUser,
+                message: 'Hasło zostało zmienione'
+        });
+}) 
