@@ -36,6 +36,8 @@ W najbliższym czasie postaram się rozwiązać ten problem.
 
 Tak jak wspomniałem powyższe funkcjonalności będą stopniowo implementowane do projektu.
 
+Jeśli chodzi o repozytorium to korzystałem z git flow i każdą funkcjonalność realizowałem na osobnym branchu który nasępnie był mergowany i usuwany. 
+
 ## Demo
 
 Demo aplikacji dostępne jest pod tym adresem:
