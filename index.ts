@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import 'express-async-errors';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
@@ -19,8 +19,13 @@ app.use(rateLimit({
     max: 100,
 }));
 
-app.use('/user', userRouter);
-app.use('/positions', positionsRouter);
+const sufixRouter = Router();
+
+sufixRouter.use('/user', userRouter);
+sufixRouter.use('/positions', positionsRouter);
+
+app.use('/api', sufixRouter);
+
 
 app.use(handleError);
 
