@@ -4,6 +4,10 @@ import { User } from "../types";
 import { authLogin } from "../utils/authLogin";
 import { ValidationError } from "../utils/errors";
 import { isEmailTaken, isUsernameTaken } from "../utils/registerValidation";
+import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const userRouter = Router();
 
@@ -11,8 +15,23 @@ userRouter
 
 .post('/login', async (req, res): Promise<void> => {
         const {email, pwd} = req.body as Pick<User, 'email' | 'pwd'>;
-        const auth = await authLogin(email, pwd);
-        res.json(auth);
+        
+        try{
+                const authUser = await authLogin(email, pwd);
+                const payload = UserRecord.filter(authUser);
+                const accessToken = jwt.sign(payload, process.env.SIGNATURE, {expiresIn: 60*60*24});
+                authUser.saveTokenId(payload.tokenId);
+
+                res
+                .cookie('jwt', accessToken, {httpOnly: true})
+                .json({message: 'Pomyślnie zalogowano!'});
+
+
+        }catch (err) {
+                res.status(401).json({
+                        message: 'Błędne dane logowania'
+                })
+        }
 })
 
 .post('/register', async (req, res): Promise<void> => {

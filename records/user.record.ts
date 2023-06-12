@@ -10,6 +10,9 @@ import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
 type UserRecordResults = [UserRecord[], FieldPacket[]];
+interface ResponseWithTokenId extends Partial<User> {
+    tokenId: string;
+}
 
 export class UserRecord {
     public id?: string;
@@ -36,6 +39,16 @@ export class UserRecord {
         if(userExists) throw new ValidationError('This username already exists');
         if(emailExists) throw new ValidationError('This email already exists');
         if(userIdExsts) throw new ValidationError('This user ID already exists');
+    }
+
+    static filter(user: UserRecord): ResponseWithTokenId {
+        const {id, username, email} = user;
+        return {
+            id,
+            username,
+            email,
+            tokenId: uuid(),
+        }
     }
 
     async insert(): Promise<void> {
@@ -96,6 +109,13 @@ export class UserRecord {
         });
 
         console.log(`▶.....User ${this.username} has been successfully deleted. ✔`);
+    }
+
+    async saveTokenId(tokenId: string): Promise<void> {
+        await pool.execute("UPDATE `users` SET currentTokenId=:tokenId WHERE id=:id", {
+            tokenId,
+            id: this.id
+        } );
     }
 
 }

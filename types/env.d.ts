@@ -1,7 +1,7 @@
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            SIGANTURE: string;
+            SIGNATURE: string;
         }
     }
 }
