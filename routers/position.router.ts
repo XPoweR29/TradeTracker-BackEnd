@@ -5,6 +5,10 @@ export const positionsRouter = Router();
 
 positionsRouter
 
+.get('/test/welcome', (req, res) => {
+    res.json('Wszystko działa')
+})
+
 .get('/:userId', async(req, res) => {
     const data = await PositionRecord.getAll(req.params.userId);
     res.json(data);
