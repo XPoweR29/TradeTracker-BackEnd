@@ -118,4 +118,9 @@ export class UserRecord {
         } );
     }
 
+    static async logout(userId: string): Promise<void> {
+        await pool.execute("UPDATE `users` SET `currentTokenId`=NULL WHERE id=:userId", {
+            userId
+        });
+    } 
 }
