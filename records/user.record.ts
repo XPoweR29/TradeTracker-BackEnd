@@ -19,6 +19,7 @@ export class UserRecord {
     public username: string;
     public email: string;
     public pwd: string;
+    public currentTokenId?: string;
     constructor(obj: User) {
 
         if(!obj.email || !obj.pwd) throw new ValidationError('Adres email i hasło są wymagane.');
@@ -29,6 +30,7 @@ export class UserRecord {
         this.username = obj.username;
         this.email = obj.email
         this.pwd = obj.pwd;
+        this.currentTokenId = obj.currentTokenId;
     }
 
     private async validation(): Promise<void> {
@@ -41,15 +43,6 @@ export class UserRecord {
         if(userIdExsts) throw new ValidationError('This user ID already exists');
     }
 
-    static filter(user: UserRecord): ResponseWithTokenId {
-        const {id, username, email} = user;
-        return {
-            id,
-            username,
-            email,
-            tokenId: uuid(),
-        }
-    }
 
     async insert(): Promise<void> {
         await this.validation();
@@ -89,6 +82,14 @@ export class UserRecord {
         return results.length === 0 ? null : new UserRecord(results[0]);
     }
 
+    static async getByTokenId(tokenId: string): Promise<UserRecord | null>{
+        const [results] = (await pool.execute("SELECT * FROM `users` WHERE `currentTokenId` = :tokenId", {
+            tokenId,
+        }))as UserRecordResults;
+
+        return results.length === 0 ? null : new UserRecord(results[0]);
+    }
+
     async update(data: Partial<User>): Promise<UserRecord> {
         await pool.execute("UPDATE `users` SET username=:username, email=:email, pwd=:pwd WHERE id=:id", {
             id: this.id,
@@ -116,11 +117,12 @@ export class UserRecord {
             tokenId,
             id: this.id
         } );
+
     }
 
-    static async logout(userId: string): Promise<void> {
+    async logout(): Promise<void> {
         await pool.execute("UPDATE `users` SET `currentTokenId`=NULL WHERE id=:userId", {
-            userId
+            userId: this.id,
         });
     } 
 }
