@@ -1,69 +1,48 @@
 import { Router } from "express";
 import { UserRecord } from "../records/user.record";
-import { User } from "../types";
-import { authLogin } from "../utils/authLogin";
+import { RequestWithUserObj, User } from "../types";
 import { ValidationError } from "../utils/errors";
-import { isEmailTaken, isUsernameTaken } from "../utils/registerValidation";
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const userRouter = Router();
 
 userRouter
 
-.post('/login', async (req, res): Promise<void> => {
-        const {email, pwd} = req.body as Pick<User, 'email' | 'pwd'>;
-        const auth = await authLogin(email, pwd);
-        res.json(auth);
-})
+  .patch("/update-username", async (req: RequestWithUserObj, res): Promise<void> => {
+    const updatedUser = await req.user.update({ username: req.body.username });
 
-.post('/register', async (req, res): Promise<void> => {
-        const {pwd, confirmPwd, email, username} = req.body as User & Record<'confirmPwd', string>;
-        
-        if(pwd !== confirmPwd) {
-                throw new ValidationError('Hasła muszą być takie same');
-        }
+    res.json({
+      user: updatedUser,
+      message: "Nazwa użytkownika została zmieniona",
+    });
+  })
 
-        if(await isEmailTaken(email)) {
-                throw new ValidationError('Ten adres email jest już zajęty');
-        }
-        
-        if(await isUsernameTaken(username)) {
-                throw new ValidationError('Ta nazwa użytkownika jest już zajęta');
-        }
-        
-        const newUser = new UserRecord({email,pwd,username});
-        await newUser.insert();
-        res.json({message: `Użytkownik ${newUser.username} został pomyślnie zarejestrowany. Możesz teraz zalogować się do swojego konta.` })
+  .patch("/update-email", async (req: RequestWithUserObj, res): Promise<void> => {
 
-})
+    const updatedUser = await req.user.update({ email: req.body.email });
+    res.json({
+      user: updatedUser,
+      message: `Email użytkownika został zmieniony`,
+    });
+  })
 
-.patch('/update-username', async(req, res): Promise<void> => {
-        const user = await UserRecord.getUserById(req.body.id);
-        const updatedUser = await user.update({username: req.body.username});
-        res.json({
-                user: updatedUser, 
-                message: 'Nazwa użytkownika została zmieniona'
-        });
-}) 
+  .patch("/update-pwd", async (req: RequestWithUserObj, res): Promise<void> => {
+    const { pwd, confirmPwd } = req.body;
+    if (pwd !== confirmPwd) {
+      throw new ValidationError("Podane hasła różnią się od siebie");
+    }
 
-.patch('/update-email', async(req, res): Promise<void> => {
-        const user = await UserRecord.getUserById(req.body.id);
-        const updatedUser = await user.update({email: req.body.email});
-        res.json({
-                user: updatedUser, 
-                message: `Email użytkownika został zmieniony`
-        });
-}) 
+    const updatedUser = await req.user.update({ pwd: pwd });
+    res.json({
+      user: updatedUser,
+      message: "Hasło zostało zmienione",
+    });
+  })
 
-.patch('/update-pwd', async(req, res): Promise<void> => {
-        const {pwd, confirmPwd, id} = req.body;
-        if(pwd !== confirmPwd) {
-                throw new ValidationError('Podane hasła różnią się od siebie');
-        }
+  .delete('/delete', async(req: RequestWithUserObj, res) => {
+        await req.user.delete();
+        res.json({message: `Użytkownik ${req.user.username} zotał usunięty.`})
+  })
 
-        const user = await UserRecord.getUserById(id);
-        const updatedUser = await user.update({pwd: pwd});
-        res.json({
-                user: updatedUser,
-                message: 'Hasło zostało zmienione'
-        });
-}) 
