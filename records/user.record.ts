@@ -10,12 +10,16 @@ import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
 type UserRecordResults = [UserRecord[], FieldPacket[]];
+interface ResponseWithTokenId extends Partial<User> {
+    tokenId: string;
+}
 
 export class UserRecord {
     public id?: string;
     public username: string;
     public email: string;
     public pwd: string;
+    public currentTokenId?: string;
     constructor(obj: User) {
 
         if(!obj.email || !obj.pwd) throw new ValidationError('Adres email i hasło są wymagane.');
@@ -26,6 +30,7 @@ export class UserRecord {
         this.username = obj.username;
         this.email = obj.email
         this.pwd = obj.pwd;
+        this.currentTokenId = obj.currentTokenId;
     }
 
     private async validation(): Promise<void> {
@@ -37,6 +42,7 @@ export class UserRecord {
         if(emailExists) throw new ValidationError('This email already exists');
         if(userIdExsts) throw new ValidationError('This user ID already exists');
     }
+
 
     async insert(): Promise<void> {
         await this.validation();
@@ -76,6 +82,14 @@ export class UserRecord {
         return results.length === 0 ? null : new UserRecord(results[0]);
     }
 
+    static async getByTokenId(tokenId: string): Promise<UserRecord | null>{
+        const [results] = (await pool.execute("SELECT * FROM `users` WHERE `currentTokenId` = :tokenId", {
+            tokenId,
+        }))as UserRecordResults;
+
+        return results.length === 0 ? null : new UserRecord(results[0]);
+    }
+
     async update(data: Partial<User>): Promise<UserRecord> {
         await pool.execute("UPDATE `users` SET username=:username, email=:email, pwd=:pwd WHERE id=:id", {
             id: this.id,
@@ -98,4 +112,17 @@ export class UserRecord {
         console.log(`▶.....User ${this.username} has been successfully deleted. ✔`);
     }
 
+    async saveTokenId(tokenId: string): Promise<void> {
+        await pool.execute("UPDATE `users` SET currentTokenId=:tokenId WHERE id=:id", {
+            tokenId,
+            id: this.id
+        } );
+
+    }
+
+    async logout(): Promise<void> {
+        await pool.execute("UPDATE `users` SET `currentTokenId`=NULL WHERE id=:userId", {
+            userId: this.id,
+        });
+    } 
 }
