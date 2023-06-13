@@ -1,16 +1,21 @@
 import { Request, Router } from "express";
 import { UserRecord } from "../records/user.record";
-import { User } from "../types";
+import { RequestWithUserObj, User } from "../types";
 import { authLogin } from "../utils/authLogin";
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 import { ValidationError } from "../utils/errors";
 import { isEmailTaken, isUsernameTaken } from "../utils/registerValidation";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { v4 as uuid } from 'uuid';
+import { generateTokenId } from "../utils/tokenId-generator";
 
 dotenv.config();
-
 export const authRouter = Router();
+
+interface JWTPayload {
+    tokenId: string;
+}
 
 authRouter
 
@@ -18,20 +23,21 @@ authRouter
         const { email, pwd } = req.body as Pick<User, "email" | "pwd">;
 
         try {
-        const authUser = await authLogin(email, pwd);
-        const payload = UserRecord.filter(authUser);
-        const accessToken = jwt.sign(payload, process.env.SIGNATURE, {
-            expiresIn: 60 * 60 * 24,
-        });
-        authUser.saveTokenId(payload.tokenId);
+            const authUser = await authLogin(email, pwd); 
+            const payload: JWTPayload = {tokenId: await generateTokenId()}; 
+            const accessToken = jwt.sign(payload, process.env.SIGNATURE, {
+                expiresIn: 60 * 60 * 24
+            }); 
+            await authUser.saveTokenId(payload.tokenId); 
 
-        res
-            .cookie("jwt", accessToken, { httpOnly: true })
-            .json({ message: "Pomyślnie zalogowano!" });
+            res
+                .cookie("jwt", accessToken, { httpOnly: true })
+                .json({ message: "Pomyślnie zalogowano!" });
+
         } catch (err) {
-        res.status(401).json({
-            message: "Błędne dane logowania",
-        });
+            res.status(401).json({
+                message: err.message,
+            });
         }
   })
 
@@ -57,7 +63,7 @@ authRouter
         });
   })
 
-  .get('/logout', authMiddleware, async(req: Request & Record<'user', Partial<User>>, res) => {
-        await UserRecord.logout(req.user.id);
+  .get('/logout', authMiddleware, async(req: RequestWithUserObj, res) => {
+        req.user.logout();
         res.clearCookie('jwt').json({message: 'Pomyślnie wylogowano'});
   })

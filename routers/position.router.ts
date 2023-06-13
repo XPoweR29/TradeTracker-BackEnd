@@ -1,16 +1,13 @@
 import { Router } from "express";
 import { PositionRecord } from "../records/position.record";
+import { RequestWithUserObj } from "../types";
 
 export const positionsRouter = Router();
 
 positionsRouter
 
-.get('/test/welcome', (req, res) => {
-    res.json('Wszystko działa')
-})
-
-.get('/:userId', async(req, res) => {
-    const data = await PositionRecord.getAll(req.params.userId);
+.get('/', async(req: RequestWithUserObj, res) => {
+    const data = await PositionRecord.getAll(req.user.id);
     res.json(data);
 })
 
