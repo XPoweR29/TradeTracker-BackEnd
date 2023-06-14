@@ -11,9 +11,13 @@ positionsRouter
     res.json(data);
 })
 
-.post('/', async(req, res) => {
-    const position = new PositionRecord(req.body);
-    await position.insert();
+.post('/', async(req: RequestWithUserObj, res) => {
+    const newPosition = new PositionRecord({
+        ...req.body, 
+        userId: req.user.id,
+    });
+
+    await newPosition.insert();
     res.json('Pozycja została pomyślnie dodana');
 })
 
