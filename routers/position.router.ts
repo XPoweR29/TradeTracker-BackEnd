@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { PositionRecord } from "../records/position.record";
-import { RequestWithUserObj } from "../types";
+import { RequestWithUserObj, SortOrder } from "../types";
 
 export const positionsRouter = Router();
 
@@ -11,9 +11,10 @@ positionsRouter
     res.json(data);
 })
 
-.get('/:pageNumber', async(req: RequestWithUserObj, res) => {
+.get('/:pageNumber/:order?', async(req: RequestWithUserObj, res) => {
     const {pageNumber} = req.params;
-    const data = await PositionRecord.get(req.user.id, +pageNumber);
+    const sortOrder = req.params.order as SortOrder;
+    const data = await PositionRecord.get(req.user.id, +pageNumber, sortOrder);
     res.json(data);
 })
 

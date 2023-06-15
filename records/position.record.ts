@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Operation, PaginationResposne, Position, When, } from "../types";
+import { Operation, PaginationResposne, Position, SortOrder, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -64,11 +64,11 @@ export class PositionRecord {
         this.rr = obj.rr ?? null;
         
     }
-
-    static async get(userId: string, currentPage: number = 1): Promise<PaginationResposne | null> {
+     
+    static async get(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResposne | null> {
         const maxPerPage = 5;
 
-        const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId ORDER BY `market` LIMIT :take OFFSET :skip", {
+        const [results] = (await pool.execute(`SELECT * FROM \`positions\` WHERE \`userId\` = :userId ORDER BY \`date\` ${sortOrder} LIMIT :take OFFSET :skip`, {
             userId,
             take: maxPerPage,
             skip: maxPerPage *(currentPage -1),
@@ -82,7 +82,7 @@ export class PositionRecord {
     } 
 
     static async getAll(userId: string): Promise<PositionRecord[] | null> {
-        //FIXME: tutaj zwracać tylko dane potrzebne do obliczenia statystyki!
+        //IMPROVE: tutaj zwracać tylko dane potrzebne do obliczenia statystyki!
         const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId", {
             userId,
         })) as PositionRecordResults;

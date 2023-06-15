@@ -22,8 +22,9 @@ export interface SimplePosition {
 }
 
 export type Operation = 'add' | 'remove';
-
+export type SortOrder = 'ASC' | 'DESC';
 export type When = 'imgUrlBefore' | 'imgUrlAfter';
+
 
 export interface PaginationResposne {
     positions: PositionRecord[];
