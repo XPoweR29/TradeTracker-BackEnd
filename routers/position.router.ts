@@ -6,10 +6,17 @@ export const positionsRouter = Router();
 
 positionsRouter
 
-.get('/', async(req: RequestWithUserObj, res) => {
+.get('/all', async(req: RequestWithUserObj, res) => {
     const data = await PositionRecord.getAll(req.user.id);
     res.json(data);
 })
+
+.get('/:pageNumber', async(req: RequestWithUserObj, res) => {
+    const {pageNumber} = req.params;
+    const data = await PositionRecord.get(req.user.id, +pageNumber);
+    res.json(data);
+})
+
 
 .post('/', async(req: RequestWithUserObj, res) => {
     const newPosition = new PositionRecord({

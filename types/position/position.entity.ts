@@ -1,3 +1,5 @@
+import { PositionRecord } from "../../records/position.record";
+
 export interface Position extends SimplePosition {
     userId: string;
     imgUrlBefore?: string;
@@ -22,3 +24,8 @@ export interface SimplePosition {
 export type Operation = 'add' | 'remove';
 
 export type When = 'imgUrlBefore' | 'imgUrlAfter';
+
+export interface PaginationResposne {
+    positions: PositionRecord[];
+    totalCount: number;
+}

@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Operation, Position, When, } from "../types";
+import { Operation, PaginationResposne, Position, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -65,7 +65,24 @@ export class PositionRecord {
         
     }
 
+    static async get(userId: string, currentPage: number = 1): Promise<PaginationResposne | null> {
+        const maxPerPage = 5;
+
+        const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId ORDER BY `market` LIMIT :take OFFSET :skip", {
+            userId,
+            take: maxPerPage,
+            skip: maxPerPage *(currentPage -1),
+        })) as PositionRecordResults;
+
+        const [countResult] = (await pool.execute("SELECT COUNT(`id`) AS `totalCount` FROM `positions` WHERE `userId`=:userId", {userId})) as any;
+
+        const totalCount = countResult[0].totalCount;
+        const positions = results.length === 0? null : results.map(result => new PositionRecord(result));
+        return {positions, totalCount};
+    } 
+
     static async getAll(userId: string): Promise<PositionRecord[] | null> {
+        //FIXME: tutaj zwracać tylko dane potrzebne do obliczenia statystyki!
         const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId", {
             userId,
         })) as PositionRecordResults;
