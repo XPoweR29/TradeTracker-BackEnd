@@ -32,7 +32,7 @@ authRouter
 
             res
                 .cookie("jwt", accessToken, { httpOnly: true })
-                .json({ message: "Pomyślnie zalogowano!" });
+                .json(authUser.filtered());
 
         } catch (err) {
             res.status(401).json({

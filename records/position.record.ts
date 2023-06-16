@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Operation, PaginationResposne, Position, SortOrder, When, } from "../types";
+import { Operation, PaginationResponse, Position, SortOrder, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -65,7 +65,7 @@ export class PositionRecord {
         
     }
      
-    static async get(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResposne | null> {
+    static async get(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResponse | null> {
         const maxPerPage = 5;
 
         const [results] = (await pool.execute(`SELECT * FROM \`positions\` WHERE \`userId\` = :userId ORDER BY \`date\` ${sortOrder} LIMIT :take OFFSET :skip`, {

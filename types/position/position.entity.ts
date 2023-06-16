@@ -26,7 +26,7 @@ export type SortOrder = 'ASC' | 'DESC';
 export type When = 'imgUrlBefore' | 'imgUrlAfter';
 
 
-export interface PaginationResposne {
+export interface PaginationResponse {
     positions: PositionRecord[];
     totalCount: number;
 }

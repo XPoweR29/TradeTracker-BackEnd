@@ -12,10 +12,10 @@ positionsRouter
 })
 
 .get('/:pageNumber/:order?', async(req: RequestWithUserObj, res) => {
-    const {pageNumber} = req.params;
-    const sortOrder = req.params.order as SortOrder;
-    const data = await PositionRecord.get(req.user.id, +pageNumber, sortOrder);
-    res.json(data);
+        const {pageNumber} = req.params;
+        const sortOrder = req.params.order as SortOrder;
+        const data = await PositionRecord.get(req.user.id, +pageNumber, sortOrder);
+        res.json(data);
 })
 
 
