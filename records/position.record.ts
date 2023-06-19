@@ -56,8 +56,8 @@ export class PositionRecord {
         this.flag = obj.flag ?? 0;
         this.imgUrlBefore = obj.imgUrlBefore ?? null;
         this.imgUrlAfter = obj.imgUrlAfter ?? null;
-        this.descriptionBefore = obj.descriptionBefore ?? null;
-        this.descriptionAfter = obj.descriptionAfter ?? null;
+        this.descriptionBefore = obj.descriptionBefore ?? '';
+        this.descriptionAfter = obj.descriptionAfter ?? '';
         this.entryPrice = obj.entryPrice ?? null;
         this.slValue = obj.slValue ?? null;
         this.closePrice = obj.closePrice ?? null;
@@ -65,7 +65,7 @@ export class PositionRecord {
         
     }
      
-    static async get(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResponse | null> {
+    static async getPaginated(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResponse | null> {
         const maxPerPage = 5;
 
         const [results] = (await pool.execute(`SELECT * FROM \`positions\` WHERE \`userId\` = :userId ORDER BY \`date\` ${sortOrder} LIMIT :take OFFSET :skip`, {

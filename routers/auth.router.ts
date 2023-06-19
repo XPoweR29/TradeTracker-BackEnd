@@ -7,7 +7,6 @@ import * as dotenv from 'dotenv';
 import { ValidationError } from "../utils/errors";
 import { isEmailTaken, isUsernameTaken } from "../utils/registerValidation";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { v4 as uuid } from 'uuid';
 import { generateTokenId } from "../utils/tokenId-generator";
 
 dotenv.config();

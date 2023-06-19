@@ -14,7 +14,7 @@ positionsRouter
 .get('/:pageNumber/:order?', async(req: RequestWithUserObj, res) => {
         const {pageNumber} = req.params;
         const sortOrder = req.params.order as SortOrder;
-        const data = await PositionRecord.get(req.user.id, +pageNumber, sortOrder);
+        const data = await PositionRecord.getPaginated(req.user.id, +pageNumber, sortOrder);
         res.json(data);
 })
 
@@ -29,20 +29,20 @@ positionsRouter
     res.json('Pozycja została pomyślnie dodana');
 })
 
-.delete('/:id', async(req, res) => {
+.delete('/:id', async(req: RequestWithUserObj, res) => {
     const position = await PositionRecord.getOne(req.params.id);
     await position.delete();
     res.json('Pozycja została usunięta.');
 })
 
-.patch('/:id', async(req, res) => {
+.patch('/:id', async(req: RequestWithUserObj, res) => {
     const position = await PositionRecord.getOne(req.params.id);
     await position.update(req.body);
     res.json('Pozycja została zaktualizowana');
 
 })
 
-.put('/:id', async(req, res) => {
+.put('/:id', async(req: RequestWithUserObj, res) => {
     const position = await PositionRecord.getOne(req.params.id);
     const {imgLink, when} = req.body;
     position.updateUrl(imgLink, 'add', when);
@@ -50,7 +50,7 @@ positionsRouter
 
 })
 
-.delete('/image/:id', async(req, res) => {
+.delete('/image/:id', async(req: RequestWithUserObj, res) => {
     const position = await PositionRecord.getOne(req.params.id);
     const {imgLink, when} = req.body;
     position.updateUrl(imgLink, 'remove', when);
