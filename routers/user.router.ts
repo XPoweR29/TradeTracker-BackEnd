@@ -34,7 +34,7 @@ userRouter
       throw new ValidationError("Podane hasła różnią się od siebie");
     }
 
-    const updatedUser = await req.user.update({ pwd: pwd });
+    const updatedUser = await req.user.update({ pwd });
     res.json({
       user: updatedUser,
       message: "Hasło zostało zmienione",

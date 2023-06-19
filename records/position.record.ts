@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Operation, Position, When, } from "../types";
+import { Operation, PaginationResponse, Position, SortOrder, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -56,16 +56,33 @@ export class PositionRecord {
         this.flag = obj.flag ?? 0;
         this.imgUrlBefore = obj.imgUrlBefore ?? null;
         this.imgUrlAfter = obj.imgUrlAfter ?? null;
-        this.descriptionBefore = obj.descriptionBefore ?? null;
-        this.descriptionAfter = obj.descriptionAfter ?? null;
+        this.descriptionBefore = obj.descriptionBefore ?? '';
+        this.descriptionAfter = obj.descriptionAfter ?? '';
         this.entryPrice = obj.entryPrice ?? null;
         this.slValue = obj.slValue ?? null;
         this.closePrice = obj.closePrice ?? null;
         this.rr = obj.rr ?? null;
         
     }
+     
+    static async getPaginated(userId: string, currentPage: number = 1, sortOrder: SortOrder = 'ASC'): Promise<PaginationResponse | null> {
+        const maxPerPage = 5;
+
+        const [results] = (await pool.execute(`SELECT * FROM \`positions\` WHERE \`userId\` = :userId ORDER BY \`date\` ${sortOrder} LIMIT :take OFFSET :skip`, {
+            userId,
+            take: maxPerPage,
+            skip: maxPerPage *(currentPage -1),
+        })) as PositionRecordResults;
+
+        const [countResult] = (await pool.execute("SELECT COUNT(`id`) AS `totalCount` FROM `positions` WHERE `userId`=:userId", {userId})) as any;
+
+        const totalCount = countResult[0].totalCount;
+        const positions = results.length === 0? null : results.map(result => new PositionRecord(result));
+        return {positions, totalCount};
+    } 
 
     static async getAll(userId: string): Promise<PositionRecord[] | null> {
+        //IMPROVE: tutaj zwracać tylko dane potrzebne do obliczenia statystyki!
         const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId", {
             userId,
         })) as PositionRecordResults;

@@ -7,7 +7,6 @@ import * as dotenv from 'dotenv';
 import { ValidationError } from "../utils/errors";
 import { isEmailTaken, isUsernameTaken } from "../utils/registerValidation";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { v4 as uuid } from 'uuid';
 import { generateTokenId } from "../utils/tokenId-generator";
 
 dotenv.config();
@@ -32,7 +31,7 @@ authRouter
 
             res
                 .cookie("jwt", accessToken, { httpOnly: true })
-                .json({ message: "Pomyślnie zalogowano!" });
+                .json(authUser.filtered());
 
         } catch (err) {
             res.status(401).json({

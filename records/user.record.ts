@@ -43,6 +43,11 @@ export class UserRecord {
         if(userIdExsts) throw new ValidationError('This user ID already exists');
     }
 
+    filtered(): Partial<User> {
+        const {id, username, email} = this;
+        return {id, username, email};
+    }
+
 
     async insert(): Promise<void> {
         await this.validation();
