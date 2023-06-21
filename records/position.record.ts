@@ -1,6 +1,6 @@
 import { FieldPacket } from 'mysql2';
 import {v4 as uuid} from 'uuid';
-import { Operation, PaginationResponse, Position, SortOrder, When, } from "../types";
+import { Operation, PaginationResponse, Position, PositionStats, SortOrder, When, } from "../types";
 import { pool } from '../utils/db';
 import { ValidationError } from '../utils/errors';
 
@@ -81,12 +81,12 @@ export class PositionRecord {
         return {positions, totalCount};
     } 
 
-    static async getAll(userId: string): Promise<PositionRecord[] | null> {
-        //IMPROVE: tutaj zwracać tylko dane potrzebne do obliczenia statystyki!
-        const [results] = (await pool.execute("SELECT * FROM `positions` WHERE `userId` = :userId", {
+    static async getAll(userId: string): Promise<PositionStats[] | null> {
+        const [results] = (await pool.execute("SELECT `date`, `result`, `rr`  FROM `positions` WHERE `userId` = :userId", {
             userId,
-        })) as PositionRecordResults;
-        return results.length === 0? null : results.map(result => new PositionRecord(result));
+        })) as [PositionStats[], FieldPacket[]];
+
+        return results.length === 0 ? null : results;
     } 
 
     static async getOne(id: string): Promise<PositionRecord | null> {

@@ -30,3 +30,9 @@ export interface PaginationResponse {
     positions: PositionRecord[];
     totalCount: number;
 }
+
+export interface PositionStats {
+    date: string;
+    result: string;
+    rr: number; 
+}
